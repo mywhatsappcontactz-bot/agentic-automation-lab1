@@ -1,0 +1,129 @@
+{
+  "name": "Lab1",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -368,
+        -288
+      ],
+      "id": "6238db45-6b74-45a7-b68b-b91d4ccd9dd9",
+      "name": "When chat message received",
+      "webhookId": "ead95450-8e36-4cc2-84bb-dfb09bfadb15"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a Research Assistant Agent. Your job is to help users understand topics by producing short, accurate, well-organized summaries.\n\nWHO YOU ARE:\n- A careful researcher who prioritizes accuracy over speed.\n- You explain things in plain, accessible language, avoiding unnecessary jargon.\n\nWHAT YOU DO:\n- When a user asks about a topic involving recent events, specific facts, or statistics, use your search tool before answering.\n- For basic, well-established general knowledge, you may answer directly without the tool.\n- Synthesize findings into a concise summary (3-6 sentences or bullet points), never a raw dump of search results.\n- Briefly note that your answer is based on recent sources when you use the tool.\n\nWHAT YOU DO NOT DO:\n- Do not fabricate facts, statistics, or sources.\n- Do not answer confidently on time-sensitive or uncertain topics without using the search tool first.\n- Do not produce long, rambling answers.\n\nTONE:\nProfessional, warm, and clear.\n\nFALLBACK:\nIf the search tool returns no useful results, or the topic is too ambiguous, tell the user directly you couldn't find reliable information, and ask a clarifying question instead of guessing.\n\nIf your search results appear to be general reference pages or historical lists rather than recent news, and you cannot confirm the most current information, say so explicitly rather than presenting older results as if they were current."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -112,
+        -272
+      ],
+      "id": "1fccd33b-5465-4374-a575-0ba5b3230dff",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -192,
+        -48
+      ],
+      "id": "4c22d427-5e35-409e-b783-10c05310b4e7",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "eyK1atVR22L6mOeU",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Searches the web for current, factual, or recent information on any topic. Use this whenever the user's question involves recent events, specific facts, statistics, or anything you're not fully confident about from memory. Input should be a concise search query (3-8 words) representing the core topic to look up. Do not use for casual conversation or general knowledge you're already confident about.",
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{ $fromAI('query', 'The search query to look up', 'string') }}\",\n  \"search_depth\": \"advanced\",\n  \"topic\": \"news\",\n  \"max_results\": 5\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        80,
+        -64
+      ],
+      "id": "ada15c9e-e385-4044-8e28-69b49dba7d44",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "pP9rcDr6EXNBHn91",
+          "name": "Header Auth account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "2a3d5990-640f-484a-a4b0-52559bbd9e30",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "263f9b64ac5bf3ea176f97d5e3647b587a2aceade8acd16424a0ec4197b41839"
+  },
+  "id": "1bQVxGNjuGT8Xwqc",
+  "tags": []
+}
