@@ -1,0 +1,9 @@
+# Lab 1 Reflection — Research Assistant Agent
+
+## What changed between the vague prompt and the proper prompt?
+
+When I first tested my agent with a vague system prompt like "You are a helpful assistant," it either answered directly from its own memory without invoking the search tool, or in one case simply echoed back a paraphrase of its own instructions instead of addressing my actual question. There was no consistent logic for when to search versus answer directly, and no fallback behavior if it wasn't confident. Once I switched to a proper role-based prompt defining who the agent was, what it should and shouldn't do, its tone, and a fallback instruction, it began reliably invoking the Tavily tool for time-sensitive questions and staying concise, and it started explicitly asking for clarification on ambiguous questions instead of guessing.
+
+## A moment the agent didn't behave as expected
+
+The most useful debugging moment came when I asked "who won the last world cup." The agent confidently answered with 2022/2023 results, which felt wrong, but checking the execution log showed the tool *had* actually been called correctly. The real problem was upstream: Tavily was returning static "list of all winners" and history pages rather than current news, since my request wasn't telling it to prioritize recency. I fixed this by adding `"topic": "news"` and `"search_depth": "advanced"` to the Tavily request body, which pushed it toward more current sources. This also taught me an important lesson beyond prompting: a tool-using agent is only as reliable as the data the tool actually retrieves, and I initially misdiagnosed a data-quality problem as a reasoning problem. Inspecting the raw tool output directly, rather than just judging the final answer, was what actually revealed the real issue.
